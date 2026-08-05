@@ -1,4 +1,4 @@
-/** Tunable thresholds shared by detectors. Centralized so the demo is easy to tune live. */
+/** Tunable thresholds shared by detectors. Centralized to make them easy to tune. */
 export const THRESHOLDS = {
   /** Elements below this opacity read as visually suppressed — bumps severity, not a gate. */
   LOW_OPACITY: 0.55,

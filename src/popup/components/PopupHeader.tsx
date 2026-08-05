@@ -12,7 +12,7 @@ export function PopupHeader({ enabled, onToggleEnabled, onOpenSettings }: PopupH
     <div className="flex items-center justify-between border-b border-cg-border px-4 py-3">
       <div className="flex items-center gap-2">
         <ShieldCheck size={18} className="text-cg-accent" />
-        <span className="text-sm font-semibold text-cg-text">ChoiceGuard</span>
+        <span className="text-sm font-semibold text-cg-text">Revealr</span>
       </div>
       <div className="flex items-center gap-3">
         <Toggle checked={enabled} onChange={onToggleEnabled} />

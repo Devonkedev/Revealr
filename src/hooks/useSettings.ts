@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { DEFAULT_SETTINGS, type ChoiceGuardSettings } from '@/types/settings'
+import { DEFAULT_SETTINGS, type RevealrSettings } from '@/types/settings'
 import { getSettings, onSettingsChanged, updateSettings } from '@/services/StorageService'
 
-/** Reactive view of ChoiceGuardSettings, kept in sync across popup/content/dashboard via chrome.storage. */
+/** Reactive view of RevealrSettings, kept in sync across popup/content/dashboard via chrome.storage. */
 export function useSettings() {
-  const [settings, setSettings] = useState<ChoiceGuardSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<RevealrSettings>(DEFAULT_SETTINGS)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function useSettings() {
     }
   }, [])
 
-  const update = useCallback((patch: Partial<ChoiceGuardSettings>) => {
+  const update = useCallback((patch: Partial<RevealrSettings>) => {
     setSettings((prev) => ({ ...prev, ...patch }))
     return updateSettings(patch)
   }, [])

@@ -1,8 +1,8 @@
-# ChoiceGuard
+# Revealr
 
-**ChoiceGuard** tells you exactly what you're agreeing to — and what it might cost you — before you click "Continue." It's a consumer-protection browser extension, not a UX-education tool: it doesn't explain psychology or grade sites as "good" or "bad." It finds hidden financial and consent commitments on the page you're on right now, and gives you one click to get out of them.
+**Revealr** tells you exactly what you're agreeing to — and what it might cost you — before you click "Continue." It's a consumer-protection browser extension, not a UX-education tool: it doesn't explain psychology or grade sites as "good" or "bad." It finds hidden financial and consent commitments on the page you're on right now, and gives you one click to get out of them.
 
-> Built as a hackathon-quality MVP. It's a real, working extension — not a mockup — but the detectors are heuristics tuned for precision over recall, and the Firebase backend is an intentionally open demo backend (see [Firebase setup](#firebase-setup-optional)).
+> This is a real, working extension — not a mockup — but the detectors are heuristics tuned for precision over recall, and the Firebase backend is intentionally left open for easy setup (see [Firebase setup](#firebase-setup-optional)).
 
 ---
 
@@ -10,9 +10,9 @@
 
 1. **Subscription Trap Shield** — finds free trials that convert to paid, and recurring-billing terms wherever they're disclosed, and surfaces the actual number: *"Free trial ends in 7 days. Then ₹799/month, renews monthly."* No hunting through fine print.
 2. **Checkout Guardian** — finds pre-checked add-ons (insurance, warranties, "protection plans", donations) at checkout and shows the dollar impact directly: *"Protection Plan +₹249 — already selected."*
-3. **Find My Exit** — one click locates and scrolls to the real cancel-subscription link, the real reject-cookies button, account-deletion, or privacy controls, however buried they are. **ChoiceGuard never clicks, submits, or modifies anything — it only improves visibility.**
+3. **Find My Exit** — one click locates and scrolls to the real cancel-subscription link, the real reject-cookies button, account-deletion, or privacy controls, however buried they are. **Revealr never clicks, submits, or modifies anything — it only improves visibility.**
 
-ChoiceGuard does not compute a "trust score" or rank sites as safe/unsafe. It reports facts — what was found, and what it costs — and leaves the judgment to you.
+Revealr does not compute a "trust score" or rank sites as safe/unsafe. It reports facts — what was found, and what it costs — and leaves the judgment to you.
 
 ## Tech stack
 
@@ -21,7 +21,7 @@ ChoiceGuard does not compute a "trust score" or rank sites as safe/unsafe. It re
 - **Tailwind CSS v4** (via `@tailwindcss/vite`)
 - **Vite 8**
 - **OpenAI** Chat Completions API (JSON mode), used narrowly for structured *extraction* (never interpretation), behind a swappable `AIService` abstraction
-- **Firebase Firestore** (REST API only — no `firebase-js-sdk`, so it works from an MV3 service worker) as a demo backend
+- **Firebase Firestore** (REST API only — no `firebase-js-sdk`, so it works from an MV3 service worker) as the Registry backend
 
 ---
 
@@ -66,7 +66,7 @@ Copy `.env.example` to `.env` if you want either of these — **both are optiona
 | Variable | Required? | Purpose |
 |---|---|---|
 | `VITE_OPENAI_API_KEY` | No | Baked in at build time as a fallback default OpenAI key. End users can also paste their own key into the popup's **Settings** tab (stored in `chrome.storage.local`, never synced) — that always takes priority. Without any key, every commitment still shows a locally-computed summary (regex-extracted amount/frequency) — AI only adds richer fields like the trial-end date and cancellation requirement. |
-| `VITE_FIREBASE_PROJECT_ID` | No | Firestore project ID for the Registry dashboard. Without it, the dashboard shows bundled mock data. |
+| `VITE_FIREBASE_PROJECT_ID` | No | Firestore project ID for the Registry dashboard. Without it, the dashboard displays built-in placeholder data so the layout isn't empty. |
 
 ## Privacy, by construction
 
@@ -76,7 +76,7 @@ Copy `.env.example` to `.env` if you want either of these — **both are optiona
 
 ## Firebase setup (optional)
 
-The Registry is a **demonstration backend only**. ChoiceGuard talks to the Firestore REST API directly with no auth, so it relies on Firestore being in permissive test-mode rules — do not point this at a project with real user data.
+Revealr talks to the Firestore REST API directly with no auth, so it relies on Firestore being in permissive test-mode rules — do not point this at a project with real user data.
 
 1. Create a project at [console.firebase.google.com](https://console.firebase.google.com)
 2. Enable **Firestore Database** → start in **test mode**
@@ -100,7 +100,7 @@ The Registry is a **demonstration backend only**. ChoiceGuard talks to the Fires
 
 4. Copy the **Project ID** (Project settings → General) into `VITE_FIREBASE_PROJECT_ID` in `.env`
 5. `npm run build` again, reload the unpacked extension
-6. Turn on **Contribute to Registry** in the popup's Settings tab on a couple of sites, then open the dashboard (popup → "Open ChoiceGuard Dashboard")
+6. Turn on **Contribute to Registry** in the popup's Settings tab on a couple of sites, then open the dashboard (popup → "Open Revealr Dashboard")
 
 ### Firestore schema
 
@@ -130,7 +130,7 @@ The dashboard aggregates this client-side: sites ranked by total commitments fou
 
 An earlier version of this project also tried to detect fake urgency, confirmshaming, misleading button hierarchy, hidden-cookie-button suppression as a standalone flag, and modal stacking. All were cut: none map to quantifiable financial/consent harm, and several (fake urgency's reset-detection, button-hierarchy) turned out to fire on completely ordinary UI in practice. A tool that cries wolf gets uninstalled — precision was prioritized over feature count.
 
-All thresholds live in `src/utils/constants.ts` — tune them live for a demo without touching detector logic.
+All thresholds live in `src/utils/constants.ts` — tune them without touching detector logic.
 
 ---
 
@@ -164,18 +164,18 @@ src/
 
 ---
 
-## Demo flow (under a minute)
+## Example walkthrough
 
-1. Open a free-trial signup page → ChoiceGuard shows *"Free trial ends in 7 days. Then ₹799/month, renews monthly."*
+1. Open a free-trial signup page → Revealr shows *"Free trial ends in 7 days. Then ₹799/month, renews monthly."*
 2. Open an e-commerce checkout with a pre-checked add-on → highlighted: *"+₹249 warranty — already selected."*
 3. Click **Find My Exit** → the page auto-scrolls to the real cancel-subscription or reject-all-cookies link.
 
-## Limitations (by design, for a hackathon MVP)
+## Known limitations
 
 - Detectors are heuristic and deliberately tuned for precision over recall — they'll miss some real commitments rather than risk crying wolf on ordinary UI.
-- The Firestore Registry uses open test-mode rules and is meant purely as a demo backend, not for production data.
+- The Firestore Registry uses open test-mode rules — don't point it at production data.
 - No automated test suite yet — verified via `tsc`, `eslint`, and manual QA in Chrome.
 
 ## License
 
-MIT — this is a hackathon demo project.
+MIT.

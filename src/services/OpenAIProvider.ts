@@ -6,7 +6,7 @@ import type { AIProvider, CommitmentExtractionRequest } from './AIService'
 const OPENAI_CHAT_COMPLETIONS_URL = 'https://api.openai.com/v1/chat/completions'
 const DEFAULT_MODEL = 'gpt-4o-mini'
 
-const SYSTEM_PROMPT = `You are ChoiceGuard's commitment-extraction engine, embedded in a browser extension.
+const SYSTEM_PROMPT = `You are Revealr's commitment-extraction engine, embedded in a browser extension.
 You are given a DOM snippet a deterministic detector flagged as a possible recurring-billing or checkout-addon commitment, plus the page it came from, and the detector's own best-effort local summary.
 
 Your ONLY job is to extract the concrete facts of what the user is agreeing to. Do NOT comment on whether it is manipulative, do NOT explain psychology, and do NOT add an opinion about the page. If you can't improve on the local summary, just confirm it.

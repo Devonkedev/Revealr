@@ -12,7 +12,7 @@ export interface ScanResult {
 
 /**
  * Runs every detector against the current DOM snapshot. There's no
- * stateful/polling detector anymore — every commitment ChoiceGuard looks
+ * stateful/polling detector anymore — every commitment Revealr looks
  * for is decidable from a single scan, which keeps the detection loop
  * simple and avoids the false-positive risk of behavior-over-time
  * heuristics (like the old countdown-reset detector).

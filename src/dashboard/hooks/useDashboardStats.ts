@@ -9,7 +9,7 @@ interface DashboardStatsResult {
   error: string | null
 }
 
-/** Loads dashboard data from Firestore when configured, otherwise (or on failure) falls back to bundled mock data. */
+/** Loads dashboard data from Firestore when configured, otherwise (or on failure) falls back to bundled placeholder data. */
 export function useDashboardStats(): DashboardStatsResult {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)

@@ -26,7 +26,7 @@ interface SeverityColorSet {
 /**
  * Severity tags a single finding (e.g. a $50/mo commitment reads higher
  * than a $2 add-on) — it is deliberately never aggregated into one
- * site-wide score. ChoiceGuard doesn't grade sites as good or bad.
+ * site-wide score. Revealr doesn't grade sites as good or bad.
  */
 export const SEVERITY_COLORS: Record<Severity, SeverityColorSet> = {
   low: { text: 'text-cg-warn', bg: 'bg-cg-warn/15', ring: 'ring-cg-warn/30', dot: 'bg-cg-warn' },

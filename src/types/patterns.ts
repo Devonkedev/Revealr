@@ -1,5 +1,5 @@
 /**
- * ChoiceGuard exposes hidden financial/consent commitments — it does not
+ * Revealr exposes hidden financial/consent commitments — it does not
  * grade a site as "good" or "bad" and does not explain UX psychology.
  * Every finding is one of exactly two kinds:
  */

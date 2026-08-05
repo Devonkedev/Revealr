@@ -18,7 +18,7 @@ function formatDay(iso: string): string {
 /**
  * Single-series line chart — total hidden commitments found across the
  * registry per day, last 14 days. This is a count, not a score: it answers
- * "how much did ChoiceGuard find," never "how good or bad were sites." One
+ * "how much did Revealr find," never "how good or bad were sites." One
  * series needs no legend box (the title says what's plotted); a crosshair +
  * shared tooltip drives hover, per the dataviz interaction spec.
  */

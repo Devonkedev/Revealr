@@ -1,6 +1,6 @@
 import type { ExtractedCommitment, PageFindingsSummary, SerializedPattern } from './detection'
 import type { DarkPatternType } from './patterns'
-import type { ChoiceGuardSettings } from './settings'
+import type { RevealrSettings } from './settings'
 
 /** Snapshot of findings for one tab, shared between content script, background, and popup. */
 export interface TabState {
@@ -42,8 +42,8 @@ export type ExtensionMessage =
   | { type: 'CG_EXTRACT_COMMITMENT'; payload: ExtractRequestPayload }
   | { type: 'CG_EXTRACT_RESULT'; payload: ExtractResultPayload }
   | { type: 'CG_GET_SETTINGS' }
-  | { type: 'CG_SETTINGS'; payload: ChoiceGuardSettings }
-  | { type: 'CG_UPDATE_SETTINGS'; payload: Partial<ChoiceGuardSettings> }
+  | { type: 'CG_SETTINGS'; payload: RevealrSettings }
+  | { type: 'CG_UPDATE_SETTINGS'; payload: Partial<RevealrSettings> }
   | { type: 'CG_OPEN_DASHBOARD' }
   | { type: 'CG_FOCUS_PATTERN'; payload: { patternId: string } }
   | { type: 'CG_FIND_EXIT' }

@@ -76,7 +76,7 @@ export interface CommitmentDetailState {
   error?: string
 }
 
-/** "Find My Exit" targets — controls ChoiceGuard locates and highlights. Never auto-clicked. */
+/** "Find My Exit" targets — controls Revealr locates and highlights. Never auto-clicked. */
 export type AssistKind = 'reject_cookies' | 'unsubscribe' | 'account_deletion' | 'privacy_controls'
 
 export interface AssistTarget {

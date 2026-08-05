@@ -34,7 +34,7 @@ export function Drawer({ open, domain, patterns, findings, selectedPattern, onSe
       <header className="flex items-center justify-between border-b border-cg-border px-4 py-3">
         <div className="flex items-center gap-2">
           <ShieldCheck size={16} className="text-cg-accent" />
-          <span className="text-sm font-semibold">ChoiceGuard</span>
+          <span className="text-sm font-semibold">Revealr</span>
         </div>
         <button onClick={onClose} className="rounded-md p-1 text-cg-muted hover:bg-cg-surface-2 hover:text-cg-text" aria-label="Close">
           <X size={16} />
@@ -52,7 +52,7 @@ export function Drawer({ open, domain, patterns, findings, selectedPattern, onSe
           onClick={onOpenDashboard}
           className="flex w-full items-center justify-center gap-1.5 text-xs font-medium text-cg-muted hover:text-cg-accent"
         >
-          Open ChoiceGuard Dashboard <ExternalLink size={12} />
+          Open Revealr Dashboard <ExternalLink size={12} />
         </button>
       </footer>
     </div>

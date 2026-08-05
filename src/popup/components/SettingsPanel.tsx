@@ -30,7 +30,7 @@ export function SettingsPanel({ onBack, standalone }: SettingsPanelProps) {
           checked={settings.showFloatingBadge}
           onChange={(v) => update({ showFloatingBadge: v })}
           label="Floating badge"
-          description="Show the ChoiceGuard button on every page"
+          description="Show the Revealr button on every page"
         />
         <Toggle
           checked={settings.autoExtractDetails}
@@ -42,7 +42,7 @@ export function SettingsPanel({ onBack, standalone }: SettingsPanelProps) {
           checked={settings.registryOptIn}
           onChange={(v) => update({ registryOptIn: v })}
           label="Contribute to Registry"
-          description="Anonymously share domain + commitment types found with the demo dashboard"
+          description="Anonymously share domain + commitment types found with the Registry dashboard"
         />
 
         <div className="border-t border-cg-border pt-4">
@@ -73,7 +73,7 @@ export function SettingsPanel({ onBack, standalone }: SettingsPanelProps) {
         </div>
       </div>
 
-      <p className="mt-6 text-center text-[10px] text-cg-muted">ChoiceGuard v1.0.0 · Built for the hackathon demo</p>
+      <p className="mt-6 text-center text-[10px] text-cg-muted">Revealr v1.0.0</p>
     </div>
   )
 }

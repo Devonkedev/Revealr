@@ -23,7 +23,7 @@ class ElementIdRegistry {
 /**
  * Owns the live detection loop for the current page: a debounced
  * MutationObserver-driven scan across every detector. Every commitment
- * ChoiceGuard looks for is decidable from a single DOM snapshot, so unlike
+ * Revealr looks for is decidable from a single DOM snapshot, so unlike
  * the old countdown-timer detector, there's no separate polling loop —
  * one scan pipeline, one merge pass. Exposes a simple pub/sub API so React
  * components can subscribe without knowing anything about MutationObservers.

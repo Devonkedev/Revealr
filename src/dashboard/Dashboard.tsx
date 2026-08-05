@@ -33,7 +33,7 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-cg-bg pb-16 text-cg-text">
-      <DashboardHeader source={stats.source} />
+      <DashboardHeader />
 
       <main className="mx-auto max-w-5xl px-8 py-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

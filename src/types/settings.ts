@@ -1,6 +1,6 @@
 export type AIProviderId = 'openai' | 'disabled'
 
-export interface ChoiceGuardSettings {
+export interface RevealrSettings {
   /** Master on/off switch for scanning + overlay. */
   enabled: boolean
   /**
@@ -12,7 +12,7 @@ export interface ChoiceGuardSettings {
    * deliberate privacy choice: nothing is sent anywhere until requested.
    */
   autoExtractDetails: boolean
-  /** Whether the user has opted in to anonymous registry uploads (Firebase demo backend). */
+  /** Whether the user has opted in to anonymous registry uploads (Firebase-backed). */
   registryOptIn: boolean
   aiProvider: AIProviderId
   /** User-supplied OpenAI key, stored in chrome.storage.local (never synced). */
@@ -21,7 +21,7 @@ export interface ChoiceGuardSettings {
   showFloatingBadge: boolean
 }
 
-export const DEFAULT_SETTINGS: ChoiceGuardSettings = {
+export const DEFAULT_SETTINGS: RevealrSettings = {
   enabled: true,
   autoExtractDetails: false,
   registryOptIn: false,

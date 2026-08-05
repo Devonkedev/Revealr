@@ -1,6 +1,6 @@
 import type { ExtractedCommitment } from '@/types/detection'
 import type { DarkPatternType } from '@/types/patterns'
-import type { ChoiceGuardSettings } from '@/types/settings'
+import type { RevealrSettings } from '@/types/settings'
 import { OpenAIProvider } from './OpenAIProvider'
 
 export interface CommitmentExtractionRequest {
@@ -44,7 +44,7 @@ export class AIService {
         clearTimeout(timeout)
       }
     } catch (error) {
-      console.warn('[ChoiceGuard] AI extraction failed, using local fallback', error)
+      console.warn('[Revealr] AI extraction failed, using local fallback', error)
       return localFallback(request)
     }
   }
@@ -65,7 +65,7 @@ function localFallback(request: CommitmentExtractionRequest): ExtractedCommitmen
  * always wins; `VITE_OPENAI_API_KEY` (baked in at build time via `.env`) is
  * used only as a developer-convenience default for local demos.
  */
-export function createAIService(settings: ChoiceGuardSettings): AIService {
+export function createAIService(settings: RevealrSettings): AIService {
   const buildTimeKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined
   const apiKey = settings.openaiApiKey.trim() || buildTimeKey?.trim() || ''
 

@@ -58,7 +58,7 @@ export function ContentApp() {
 
   // Opt-in convenience: warm the AI-extraction cache for every commitment as
   // it's found, instead of waiting for the user to open it. Off by default —
-  // see ChoiceGuardSettings.autoExtractDetails.
+  // see RevealrSettings.autoExtractDetails.
   useEffect(() => {
     if (!settings.autoExtractDetails) return
     for (const pattern of patterns) prefetchCommitmentDetails(pattern)

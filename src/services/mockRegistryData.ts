@@ -3,7 +3,7 @@ import type { DashboardStats, RegistryEntryDoc } from '@/types/registry'
 import { buildDashboardStats } from './FirebaseService'
 
 /**
- * Believable, self-contained sample data so the dashboard looks like a real
+ * Believable, self-contained placeholder data so the dashboard looks like a real
  * product on first install — before any real page has been scanned or
  * Firebase has been configured. Never uploaded anywhere; generated locally.
  */

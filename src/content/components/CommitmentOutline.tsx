@@ -47,7 +47,7 @@ export function CommitmentOutline({ pattern, onSelect }: CommitmentOutlineProps)
       }}
       role="button"
       tabIndex={0}
-      aria-label={`ChoiceGuard found: ${meta.label}`}
+      aria-label={`Revealr found: ${meta.label}`}
     >
       <span
         className={`absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-cg-bg ${colors.bg} ${colors.text}`}

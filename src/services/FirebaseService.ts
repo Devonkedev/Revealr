@@ -3,7 +3,7 @@ import type { DashboardStats, DashboardTopSite, DashboardTrendPoint, RegistryEnt
 import { isoDay } from '@/utils/format'
 
 /**
- * Firebase (Firestore) is used purely as a demo/mock backend here — see
+ * Firebase (Firestore) backs the Registry dashboard — see
  * README "Firebase setup" for the one-time project creation + test-mode
  * rules this relies on. We talk to the Firestore REST API directly
  * (no firebase-js-sdk) so this works from an MV3 service worker without
@@ -93,7 +93,7 @@ export async function fetchRegistryEntries(limit = 500): Promise<RegistryEntryDo
 }
 
 /**
- * Pure aggregation — shared by the real Firestore path and the mock data
+ * Pure aggregation — shared by the real Firestore path and the placeholder-data path
  * generator. This counts what was found; it never scores or ranks a site as
  * "good" or "bad" — sites are ordered by how many hidden commitments were
  * found, a fact, not a grade.

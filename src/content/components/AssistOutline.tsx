@@ -9,7 +9,7 @@ interface AssistOutlineProps {
 /**
  * "Find My Exit" highlight — makes a helpful control (the real reject-
  * cookies button, a buried unsubscribe/cancel link, account deletion,
- * privacy controls) visually obvious. Purely cosmetic: ChoiceGuard never
+ * privacy controls) visually obvious. Purely cosmetic: Revealr never
  * clicks or modifies anything.
  */
 export function AssistOutline({ assist, focused }: AssistOutlineProps) {

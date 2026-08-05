@@ -60,7 +60,7 @@ export function PopupHome({ tabState, loading, onRescan, onSelectPattern, onFind
         onClick={onOpenDashboard}
         className="flex items-center justify-center gap-1.5 pt-1 text-xs font-medium text-cg-muted hover:text-cg-accent"
       >
-        Open ChoiceGuard Dashboard <ExternalLink size={12} />
+        Open Revealr Dashboard <ExternalLink size={12} />
       </button>
     </div>
   )
