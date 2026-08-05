@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+
+/*
+ * Shared design tokens for the popup and dashboard (regular document context).
+ * The content-script UI uses the same tokens but re-imports this file with
+ * `?inline` so it can be injected into a shadow root — see src/content/main.tsx.
+ */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --color-cg-bg: #0b0b0f;
+  --color-cg-surface: #131318;
+  --color-cg-surface-2: #1a1a22;
+  --color-cg-border: #26262f;
+  --color-cg-text: #f2f2f5;
+  --color-cg-muted: #9797a6;
+
+  --color-cg-accent: #7c6cf6;
+  --color-cg-accent-2: #5ee6c8;
+
+  --color-cg-danger: #ff5d5d;
+  --color-cg-warn: #ffb84d;
+  --color-cg-good: #5ee6a0;
+
+  --animate-cg-fade-in: cg-fade-in 0.18s ease-out;
+  --animate-cg-slide-in: cg-slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-cg-pulse-ring: cg-pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-cg-pop: cg-pop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cg-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cg-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 108, 246, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(124, 108, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 108, 246, 0);
+  }
+}
+
+@keyframes cg-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+html,
+body {
+  color-scheme: dark;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-cg-border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-cg-border);
+  border-radius: 8px;
+}
