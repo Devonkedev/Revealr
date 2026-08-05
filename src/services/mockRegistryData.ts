@@ -7,15 +7,15 @@ import { buildDashboardStats } from './FirebaseService'
  * product on first install — before any real page has been scanned or
  * Firebase has been configured. Never uploaded anywhere; generated locally.
  */
-const MOCK_DOMAINS: Array<{ domain: string; baseScore: number; patterns: DarkPatternType[] }> = [
-  { domain: 'megasale-deals.com', baseScore: 28, patterns: ['fake_urgency', 'confirmshaming', 'hidden_reject_cookies', 'multiple_modal_layers'] },
-  { domain: 'streamflix.example', baseScore: 41, patterns: ['forced_continuity', 'hard_to_find_unsubscribe', 'hidden_recurring_billing'] },
-  { domain: 'quickcart.example', baseScore: 52, patterns: ['sneak_into_basket', 'misleading_hierarchy'] },
-  { domain: 'travelnow.example', baseScore: 35, patterns: ['fake_urgency', 'misleading_hierarchy', 'sneak_into_basket'] },
-  { domain: 'newsdaily.example', baseScore: 63, patterns: ['hidden_reject_cookies', 'confirmshaming'] },
-  { domain: 'fitclub.example', baseScore: 22, patterns: ['forced_continuity', 'hard_to_find_unsubscribe', 'confirmshaming', 'fake_urgency'] },
-  { domain: 'shopwise.example', baseScore: 74, patterns: ['misleading_hierarchy'] },
-  { domain: 'cloudstore.example', baseScore: 81, patterns: ['hidden_reject_cookies'] },
+const MOCK_DOMAINS: Array<{ domain: string; baseCommitments: number; patterns: DarkPatternType[] }> = [
+  { domain: 'streamflix.example', baseCommitments: 2, patterns: ['subscription_commitment'] },
+  { domain: 'fitclub.example', baseCommitments: 2, patterns: ['subscription_commitment'] },
+  { domain: 'quickcart.example', baseCommitments: 1, patterns: ['checkout_addon'] },
+  { domain: 'travelnow.example', baseCommitments: 2, patterns: ['subscription_commitment', 'checkout_addon'] },
+  { domain: 'megasale-deals.com', baseCommitments: 2, patterns: ['checkout_addon'] },
+  { domain: 'newsdaily.example', baseCommitments: 1, patterns: ['subscription_commitment'] },
+  { domain: 'shopwise.example', baseCommitments: 1, patterns: ['checkout_addon'] },
+  { domain: 'cloudstore.example', baseCommitments: 1, patterns: ['subscription_commitment'] },
 ]
 
 function seededRandom(seed: number) {
@@ -37,14 +37,14 @@ export function generateMockRegistryEntries(): RegistryEntryDoc[] {
     const scanCount = 4 + Math.floor(rand() * 8)
     for (let i = 0; i < scanCount; i++) {
       const dayOffset = Math.floor(rand() * 14)
-      const scoreJitter = Math.round((rand() - 0.5) * 16)
-      const score = Math.max(4, Math.min(96, site.baseScore + scoreJitter))
       const patternSubset = site.patterns.filter(() => rand() > 0.25)
+      const patternTypes = patternSubset.length > 0 ? patternSubset : [site.patterns[0]!]
+      const commitmentCount = Math.max(0, site.baseCommitments + Math.round((rand() - 0.5) * 2))
       entries.push({
         id: `mock_${idCounter++}`,
         domain: site.domain,
-        patternTypes: patternSubset.length > 0 ? patternSubset : [site.patterns[0]!],
-        score,
+        patternTypes,
+        commitmentCount,
         timestamp: now - dayOffset * DAY_MS - Math.floor(rand() * DAY_MS),
       })
     }

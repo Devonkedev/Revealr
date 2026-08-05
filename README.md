@@ -1,21 +1,18 @@
 # ChoiceGuard
 
-**ChoiceGuard** is an AI-powered Chrome extension that detects manipulative UX ("dark patterns") in real time as you browse — fake urgency countdowns, confirmshaming, hidden "reject cookies" buttons, forced-continuity subscriptions, sneak-into-basket add-ons, misleading button hierarchy, buried unsubscribe links, and more.
+**ChoiceGuard** tells you exactly what you're agreeing to — and what it might cost you — before you click "Continue." It's a consumer-protection browser extension, not a UX-education tool: it doesn't explain psychology or grade sites as "good" or "bad." It finds hidden financial and consent commitments on the page you're on right now, and gives you one click to get out of them.
 
-It combines **deterministic DOM/heuristic detection** (no ML training required, runs entirely client-side) with an **LLM call** for plain-language explanation and classification, then surfaces everything through a live on-page overlay, a side drawer, a popup, and a "Registry" dashboard.
-
-> Built as a hackathon-quality MVP. It's a real, working extension — not a mockup — but the detectors are heuristics, not a certified dark-pattern classifier, and the Firebase backend is an intentionally open demo backend (see [Firebase setup](#firebase-setup-optional)).
+> Built as a hackathon-quality MVP. It's a real, working extension — not a mockup — but the detectors are heuristics tuned for precision over recall, and the Firebase backend is an intentionally open demo backend (see [Firebase setup](#firebase-setup-optional)).
 
 ---
 
-## Features
+## The three things it does
 
-- **Dark pattern detection** — 9 heuristic detectors (see [Detected patterns](#detected-patterns)) built from DOM inspection, computed-style analysis (opacity, contrast, font size), and text heuristics. No page is sent anywhere for this step.
-- **AI explanation** — when you click a flagged element, a small evidence snippet (visible text + trimmed HTML) is sent to OpenAI, which returns a structured classification: psychological bias exploited, why it's manipulative, a fair alternative, and likely business impact. Falls back to a built-in template explanation if no API key is configured.
-- **Live overlay** — red/amber outlines drawn directly on the page over flagged elements, with hover tooltips and click-to-explain.
-- **Choice Assist** — highlights the *true* reject-cookies button, buried unsubscribe links, and recurring-billing fine print in green so you can find them. **ChoiceGuard never clicks, submits, or modifies anything on the page** — it only improves visibility.
-- **Transparency Score** — a 0–100 score per page/site, with a risk level (Low/Medium/High) and a breakdown of which patterns were found.
-- **Registry dashboard** — an opt-in, anonymous demo backend (Firebase Firestore) aggregating domain → pattern types → score across everyone who's opted in, visualized as top offending sites, a 14-day score trend, and the most common manipulation types. Ships with realistic mock data so the dashboard looks alive even with zero setup.
+1. **Subscription Trap Shield** — finds free trials that convert to paid, and recurring-billing terms wherever they're disclosed, and surfaces the actual number: *"Free trial ends in 7 days. Then ₹799/month, renews monthly."* No hunting through fine print.
+2. **Checkout Guardian** — finds pre-checked add-ons (insurance, warranties, "protection plans", donations) at checkout and shows the dollar impact directly: *"Protection Plan +₹249 — already selected."*
+3. **Find My Exit** — one click locates and scrolls to the real cancel-subscription link, the real reject-cookies button, account-deletion, or privacy controls, however buried they are. **ChoiceGuard never clicks, submits, or modifies anything — it only improves visibility.**
+
+ChoiceGuard does not compute a "trust score" or rank sites as safe/unsafe. It reports facts — what was found, and what it costs — and leaves the judgment to you.
 
 ## Tech stack
 
@@ -23,7 +20,7 @@ It combines **deterministic DOM/heuristic detection** (no ML training required, 
 - **React 19 + TypeScript** (strict, `noUncheckedIndexedAccess`, no `any`)
 - **Tailwind CSS v4** (via `@tailwindcss/vite`)
 - **Vite 8**
-- **OpenAI** Chat Completions API (JSON mode) for explanations, behind a swappable `AIService` abstraction
+- **OpenAI** Chat Completions API (JSON mode), used narrowly for structured *extraction* (never interpretation), behind a swappable `AIService` abstraction
 - **Firebase Firestore** (REST API only — no `firebase-js-sdk`, so it works from an MV3 service worker) as a demo backend
 
 ---
@@ -42,7 +39,7 @@ Then load the extension:
 3. Click **Load unpacked**
 4. Select the `dist/` folder produced by `npm run build`
 
-That's it — no environment variables are required to try the extension. Visit any site; the popup (toolbar icon) and the floating badge (bottom-right of the page) will show a live Transparency Score. Click the badge to open the side drawer.
+No environment variables are required to try it. Visit a site with a free trial or a checkout flow; the toolbar badge and the floating button (bottom-right of the page) show what was found. Click "Find My Exit" from either the popup or the drawer to locate the real cancel link on any page.
 
 ### Development mode
 
@@ -68,8 +65,14 @@ Copy `.env.example` to `.env` if you want either of these — **both are optiona
 
 | Variable | Required? | Purpose |
 |---|---|---|
-| `VITE_OPENAI_API_KEY` | No | Baked in at build time as a fallback default OpenAI key. End users can also paste their own key into the popup's **Settings** tab (stored in `chrome.storage.local`, never synced) — that always takes priority. Without any key, AI explanations fall back to a built-in template. |
+| `VITE_OPENAI_API_KEY` | No | Baked in at build time as a fallback default OpenAI key. End users can also paste their own key into the popup's **Settings** tab (stored in `chrome.storage.local`, never synced) — that always takes priority. Without any key, every commitment still shows a locally-computed summary (regex-extracted amount/frequency) — AI only adds richer fields like the trial-end date and cancellation requirement. |
 | `VITE_FIREBASE_PROJECT_ID` | No | Firestore project ID for the Registry dashboard. Without it, the dashboard shows bundled mock data. |
+
+## Privacy, by construction
+
+- Detection runs **entirely locally** — DOM inspection, regex extraction, computed-style checks. No page content leaves your browser for this step.
+- The AI call is **opt-in per commitment**: it only fires when you open a commitment's detail view (or if you turn on "Auto-extract details" in Settings), and it sends a small evidence snippet — not the page, not your browsing history.
+- The Registry upload is **off by default** and, when on, sends only domain + commitment types + a count — no URLs, no page content, no PII.
 
 ## Firebase setup (optional)
 
@@ -85,10 +88,10 @@ The Registry is a **demonstration backend only**. ChoiceGuard talks to the Fires
      match /databases/{database}/documents {
        match /registry/{entryId} {
          allow read: if true;
-         allow create: if request.resource.data.keys().hasOnly(['domain', 'patternTypes', 'score', 'timestamp'])
+         allow create: if request.resource.data.keys().hasOnly(['domain', 'patternTypes', 'commitmentCount', 'timestamp'])
            && request.resource.data.domain is string
-           && request.resource.data.score is int
-           && request.resource.data.score >= 0 && request.resource.data.score <= 100;
+           && request.resource.data.commitmentCount is int
+           && request.resource.data.commitmentCount >= 0;
          allow update, delete: if false;
        }
      }
@@ -106,30 +109,26 @@ Single collection, `registry`, one document per opted-in scan (throttled to at m
 ```ts
 // collection: registry
 {
-  domain: string          // e.g. "example.com" — no full URLs, no PII
-  patternTypes: string[]  // e.g. ["fake_urgency", "confirmshaming"]
-  score: number           // 0–100 Transparency Score at time of scan
-  timestamp: number       // Date.now(), ms since epoch
+  domain: string           // e.g. "example.com" — no full URLs, no PII
+  patternTypes: string[]   // subset of ["subscription_commitment", "checkout_addon"]
+  commitmentCount: number  // how many hidden commitments were found on that scan
+  timestamp: number        // Date.now(), ms since epoch
 }
 ```
 
-The dashboard aggregates this client-side: top sites by (lowest) average score, a 14-day score trend, and pattern-type frequency across the whole registry.
+The dashboard aggregates this client-side: sites ranked by total commitments found, a 14-day found-per-day trend, and commitment-type frequency across the whole registry. No score or good/bad ranking is computed anywhere.
 
 ---
 
-## Detected patterns
+## What it detects (and what it deliberately doesn't)
 
-| Pattern | How it's detected |
-|---|---|
-| **Fake urgency** | Countdown-like text (`MM:SS` / `HH:MM:SS`) tracked across polls; a timer that resets instead of reaching zero is flagged with high confidence. A countdown paired with pressure language ("only 3 left", "hurry") is flagged at lower confidence even without a reset. |
-| **Confirmshaming** | Opt-out controls matched against a phrase list and a "negation + emotionally loaded language" heuristic (e.g. "No thanks, I don't want to save money and stay unprotected"). |
-| **Hidden reject cookies** | Cookie banners where the reject control scores far lower than accept on a prominence heuristic (background fill, font weight, size, opacity, contrast) — or fails WCAG contrast outright. |
-| **Forced continuity** | A "free trial" CTA with nearby recurring-billing disclosure text that's suppressed (tiny font / low contrast / low opacity) relative to the CTA. |
-| **Sneak into basket** | Pre-checked checkboxes/widgets whose label mentions insurance, warranty, protection plans, donations, etc. |
-| **Misleading button hierarchy** | A binary choice (two sibling buttons) where one is rendered dramatically larger than the other. |
-| **Hard-to-find unsubscribe** | Cancellation/unsubscribe links present in the DOM but styled to be easy to miss (tiny, faint, low contrast). |
-| **Hidden recurring billing** | Billing-disclosure text ("auto-renew", "will be charged", "unless you cancel") rendered as fine print. |
-| **Multiple modal layers** | Two or more simultaneously visible full-screen overlays (`position: fixed/absolute`, high z-index, large viewport coverage, or `role="dialog"`). |
+| Detector | What it finds | Why it's kept high-confidence |
+|---|---|---|
+| **Subscription commitment** | Free trials that convert to paid, and recurring-billing terms, wherever disclosed — merges what used to be two separate heuristics. Fires on the *presence* of a real commitment, not on how well it's hidden; suppressed styling (tiny font/low contrast/low opacity) only raises confidence, never gates detection. | A local regex extracts amount + billing frequency immediately, no AI required for the headline number. |
+| **Checkout add-on** | Pre-checked checkboxes whose label mentions insurance, warranty, protection plans, or donations. | Binary checkbox state — the least ambiguous signal in the extension. |
+| **Find My Exit** (assist, not a "flag") | Reject-cookies button, cancel/unsubscribe link, account-deletion link, privacy controls — found and highlighted regardless of how they're styled. | Makes no claim about manipulation; it's a lookup, not a judgment. |
+
+An earlier version of this project also tried to detect fake urgency, confirmshaming, misleading button hierarchy, hidden-cookie-button suppression as a standalone flag, and modal stacking. All were cut: none map to quantifiable financial/consent harm, and several (fake urgency's reset-detection, button-hierarchy) turned out to fire on completely ordinary UI in practice. A tool that cries wolf gets uninstalled — precision was prioritized over feature count.
 
 All thresholds live in `src/utils/constants.ts` — tune them live for a demo without touching detector logic.
 
@@ -141,39 +140,39 @@ All thresholds live in `src/utils/constants.ts` — tune them live for a demo wi
 src/
   background/     Service worker: message router, tab state, badge, registry upload throttling
   content/         Content script: detection loop (DetectionStore), overlay/drawer/badge UI, mounted into a shadow DOM
-    detectors/      One file per dark pattern + scoring
-    components/      Overlay, PatternOutline, AssistOutline, Drawer, ExplanationPanel, FloatingBadge
+    detectors/      subscriptionCommitment, checkoutAddon (patterns) + cookieButton, hiddenUnsubscribe, accountControls (Find My Exit assists)
+    components/      Overlay, CommitmentOutline, AssistOutline, Drawer, CommitmentDetail, FloatingBadge
   popup/           Toolbar popup (also doubles as the Options page at #/options)
   dashboard/       Registry dashboard (separate extension page, opened in a new tab)
   services/        AIService (+ OpenAIProvider), FirebaseService, StorageService, messaging
-  components/      Shared UI: Button, Toggle, ScoreGauge, RiskBadge, PatternListItem
-  hooks/           useSettings, useDetectionStore, useExplanation
+  components/      Shared UI: Button, Toggle, CommitmentListItem, FindExitButton
+  hooks/           useSettings, useDetectionStore, useCommitmentDetails
   types/           Shared TypeScript types (patterns, detection, messages, settings, registry)
   utils/           DOM inspection, color-contrast (WCAG), formatting, constants
 ```
 
-### How detection flows end-to-end
+### How it flows end-to-end
 
-1. `DetectionStore` (content script) runs a debounced `MutationObserver`-driven scan through every stateless detector, plus a separate polling loop for the stateful countdown detector.
-2. Results render immediately as overlay outlines — no network call needed for detection itself.
-3. The content script reports a serialized summary to the background worker (`CG_SCAN_RESULT`), which updates the toolbar badge and, if the user opted in, throttles an anonymous upload to Firestore.
-4. Clicking a flagged element sends `CG_EXPLAIN_PATTERN` to the background worker, which calls `AIService` (OpenAI, or the built-in fallback) and returns a structured explanation — kept off the content script so the request isn't subject to page CSP/CORS.
+1. `DetectionStore` (content script) runs a debounced `MutationObserver`-driven scan through both pattern detectors, plus the three Find My Exit assist-finders. There's no polling/stateful detector — every commitment is decidable from a single DOM snapshot.
+2. Each detector computes a **local, regex-derived summary** (amount, billing frequency) at detection time — this is what shows in the banner immediately, no network call involved.
+3. The content script reports a serialized summary to the background worker (`CG_SCAN_RESULT`), which updates the toolbar badge (a count, not a color-coded risk level) and, if the user opted in, throttles an anonymous upload to Firestore.
+4. Opening a commitment's detail view sends `CG_EXTRACT_COMMITMENT` to the background worker, which calls `AIService` (OpenAI, or the local-only fallback) to enrich the local summary with a trial-end date, renewal date, and cancellation requirement — kept off the content script so the request isn't subject to page CSP/CORS, and never leaves the user with nothing even if the AI call fails.
 
 ### Swapping the AI provider
 
-`AIService` (`src/services/AIService.ts`) depends only on the `AIProvider` interface. `OpenAIProvider` is the only implementation today; to add another (Anthropic, a local model, etc.), implement `AIProvider.explain()` and wire it into `createAIService()`.
+`AIService` (`src/services/AIService.ts`) depends only on the `AIProvider` interface, whose one method is `extract()` — never `explain()` or `judge()`. `OpenAIProvider` is the only implementation today; to add another (Anthropic, a local model, etc.), implement `AIProvider.extract()` and wire it into `createAIService()`.
 
 ---
 
-## Screenshots
+## Demo flow (under a minute)
 
-The dashboard (`chrome-extension://<id>/dashboard.html`) renders fully populated with realistic mock data immediately after install — no Firebase setup needed — so it's a good first screenshot. For the in-page overlay/drawer, visit any site with a cookie banner or countdown timer, or use your own test page with a few of the patterns above; the floating badge and outlines appear within ~1 second.
-
----
+1. Open a free-trial signup page → ChoiceGuard shows *"Free trial ends in 7 days. Then ₹799/month, renews monthly."*
+2. Open an e-commerce checkout with a pre-checked add-on → highlighted: *"+₹249 warranty — already selected."*
+3. Click **Find My Exit** → the page auto-scrolls to the real cancel-subscription or reject-all-cookies link.
 
 ## Limitations (by design, for a hackathon MVP)
 
-- Detectors are heuristic, not a trained classifier — expect some false positives/negatives, especially on sites with unusual markup.
+- Detectors are heuristic and deliberately tuned for precision over recall — they'll miss some real commitments rather than risk crying wolf on ordinary UI.
 - The Firestore Registry uses open test-mode rules and is meant purely as a demo backend, not for production data.
 - No automated test suite yet — verified via `tsc`, `eslint`, and manual QA in Chrome.
 

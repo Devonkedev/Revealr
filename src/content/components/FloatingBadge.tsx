@@ -1,16 +1,15 @@
-import type { TransparencyScoreResult } from '@/types/detection'
-import { scoreColorClass } from '@/components/patternVisuals'
+import { ShieldCheck } from 'lucide-react'
+import type { PageFindingsSummary } from '@/types/detection'
 
 interface FloatingBadgeProps {
-  score: TransparencyScoreResult
+  findings: PageFindingsSummary
   onClick: () => void
   visible: boolean
 }
 
-/** Persistent bottom-right badge showing the live Transparency Score for the current page. */
-export function FloatingBadge({ score, onClick, visible }: FloatingBadgeProps) {
+/** Persistent bottom-right entry point. Shows a count when something was found — never a score or grade. */
+export function FloatingBadge({ findings, onClick, visible }: FloatingBadgeProps) {
   if (!visible) return null
-  const colors = scoreColorClass(score.score)
 
   return (
     <button
@@ -19,12 +18,16 @@ export function FloatingBadge({ score, onClick, visible }: FloatingBadgeProps) {
       className="animate-cg-pop fixed bottom-5 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-cg-surface shadow-2xl ring-1 ring-cg-border transition-transform duration-150 hover:scale-105"
       style={{ zIndex: 2147483000 }}
       aria-label="Open ChoiceGuard"
-      title={`ChoiceGuard Transparency Score: ${score.score}/100`}
+      title={
+        findings.totalCommitments > 0
+          ? `ChoiceGuard found ${findings.totalCommitments} hidden commitment${findings.totalCommitments === 1 ? '' : 's'} on this page`
+          : 'ChoiceGuard — nothing hidden found on this page'
+      }
     >
-      <span className={`text-base font-semibold leading-none tabular-nums ${colors.text}`}>{score.score}</span>
-      {score.totalPatterns > 0 && (
+      <ShieldCheck size={20} className="text-cg-accent" />
+      {findings.totalCommitments > 0 && (
         <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-cg-danger px-1 text-[10px] font-bold text-white ring-2 ring-cg-bg">
-          {score.totalPatterns}
+          {findings.totalCommitments}
         </span>
       )}
     </button>

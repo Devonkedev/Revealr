@@ -23,7 +23,7 @@ export async function maybeUploadToRegistry(state: Omit<TabState, 'tabId'>, sett
     await uploadRegistryEntry({
       domain: state.domain,
       patternTypes: [...new Set(state.patterns.map((p) => p.type))],
-      score: state.score.score,
+      commitmentCount: state.findings.totalCommitments,
       timestamp: Date.now(),
     })
   } catch (error) {

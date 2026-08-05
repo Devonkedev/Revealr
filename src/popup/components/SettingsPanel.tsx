@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, KeyRound } from 'lucide-react'
+import { ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react'
 import { Toggle } from '@/components'
 import { useSettings } from '@/hooks/useSettings'
 
@@ -30,19 +30,19 @@ export function SettingsPanel({ onBack, standalone }: SettingsPanelProps) {
           checked={settings.showFloatingBadge}
           onChange={(v) => update({ showFloatingBadge: v })}
           label="Floating badge"
-          description="Show the score badge on every page"
+          description="Show the ChoiceGuard button on every page"
         />
         <Toggle
-          checked={settings.explainAutomatically}
-          onChange={(v) => update({ explainAutomatically: v })}
-          label="Auto-explain"
-          description="Fetch an AI explanation as soon as a pattern is found"
+          checked={settings.autoExtractDetails}
+          onChange={(v) => update({ autoExtractDetails: v })}
+          label="Auto-extract details"
+          description="Send a commitment's fine print to AI as soon as it's found, instead of only when you open it"
         />
         <Toggle
           checked={settings.registryOptIn}
           onChange={(v) => update({ registryOptIn: v })}
           label="Contribute to Registry"
-          description="Anonymously share domain + pattern types + score with the demo dashboard"
+          description="Anonymously share domain + commitment types found with the demo dashboard"
         />
 
         <div className="border-t border-cg-border pt-4">
@@ -59,8 +59,16 @@ export function SettingsPanel({ onBack, standalone }: SettingsPanelProps) {
             className="w-full rounded-lg border border-cg-border bg-cg-surface-2 px-3 py-2 text-xs text-cg-text outline-none focus:border-cg-accent"
           />
           <p className="mt-1.5 text-[11px] leading-relaxed text-cg-muted">
-            Stored locally in chrome.storage.local — never synced or sent anywhere except directly to OpenAI. Leave blank to use built-in
-            template explanations instead of live AI.
+            Stored locally in chrome.storage.local — never synced or sent anywhere except directly to OpenAI. Leave blank to use the
+            locally-extracted summary instead of AI-enriched details.
+          </p>
+        </div>
+
+        <div className="flex gap-2.5 rounded-xl bg-cg-surface-2/50 p-3">
+          <ShieldCheck size={15} className="mt-0.5 shrink-0 text-cg-good" />
+          <p className="text-[11px] leading-relaxed text-cg-muted">
+            Detection runs entirely on your device — full pages are never uploaded anywhere. Only a small snippet of the specific text you
+            open is ever sent to AI, and only when detail extraction happens.
           </p>
         </div>
       </div>

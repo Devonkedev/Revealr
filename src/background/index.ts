@@ -19,7 +19,7 @@ async function handleMessage(message: ExtensionMessage, sender: chrome.runtime.M
       const tabId = sender.tab?.id
       if (tabId === undefined) return { ok: false }
       const state = setTabState(tabId, message.payload)
-      await updateActionBadge(tabId, state.score)
+      await updateActionBadge(tabId, state.findings)
       const settings = await getSettings()
       void maybeUploadToRegistry(message.payload, settings)
       return { ok: true }
@@ -29,27 +29,22 @@ async function handleMessage(message: ExtensionMessage, sender: chrome.runtime.M
       return { type: 'CG_TAB_STATE', payload: getTabState(message.payload.tabId) }
     }
 
-    case 'CG_EXPLAIN_PATTERN': {
+    case 'CG_EXTRACT_COMMITMENT': {
+      // AIService.extract() never rejects — it always resolves with at least
+      // the detector's own local (regex-derived) summary, so there's no
+      // error branch to route to the UI here.
       const settings = await getSettings()
       const aiService = createAIService(settings)
-      try {
-        const explanation = await aiService.explain({
-          type: message.payload.type,
-          evidenceText: message.payload.evidenceText,
-          evidenceHtml: message.payload.evidenceHtml,
-          pageTitle: message.payload.pageTitle,
-          domain: message.payload.domain,
-        })
-        return { type: 'CG_EXPLAIN_RESULT', payload: { patternId: message.payload.patternId, explanation } }
-      } catch (error) {
-        return {
-          type: 'CG_EXPLAIN_RESULT',
-          payload: {
-            patternId: message.payload.patternId,
-            error: error instanceof Error ? error.message : 'AI explanation failed',
-          },
-        }
-      }
+      const commitment = await aiService.extract({
+        type: message.payload.type,
+        evidenceText: message.payload.evidenceText,
+        evidenceHtml: message.payload.evidenceHtml,
+        pageTitle: message.payload.pageTitle,
+        domain: message.payload.domain,
+        quickSummary: message.payload.quickSummary,
+        quickAmount: message.payload.quickAmount,
+      })
+      return { type: 'CG_EXTRACT_RESULT', payload: { patternId: message.payload.patternId, commitment } }
     }
 
     case 'CG_GET_SETTINGS': {
@@ -65,9 +60,10 @@ async function handleMessage(message: ExtensionMessage, sender: chrome.runtime.M
       return { ok: true }
     }
 
-    // CG_FOCUS_PATTERN and CG_RESCAN are sent tab-targeted (chrome.tabs.sendMessage)
-    // straight to the content script; CG_TAB_STATE/CG_SETTINGS/CG_EXPLAIN_RESULT are
-    // response shapes, never sent as requests. Nothing to do here for any of them.
+    // CG_FOCUS_PATTERN, CG_FIND_EXIT, and CG_RESCAN are sent tab-targeted
+    // (chrome.tabs.sendMessage) straight to the content script;
+    // CG_TAB_STATE/CG_SETTINGS/CG_EXTRACT_RESULT are response shapes, never
+    // sent as requests. Nothing to do here for any of them.
     default:
       return undefined
   }

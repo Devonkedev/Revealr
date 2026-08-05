@@ -8,10 +8,10 @@ import pkg from './package.json' with { type: 'json' }
  */
 export default defineManifest({
   manifest_version: 3,
-  name: 'ChoiceGuard — Dark Pattern Detector',
+  name: 'ChoiceGuard — Know What You’re Agreeing To',
   short_name: 'ChoiceGuard',
   description:
-    'Detects manipulative UX ("dark patterns") in real time — fake urgency, confirmshaming, hidden cancel links, and more — and explains why they work.',
+    "Tells you exactly what you're agreeing to before you click Continue — hidden subscriptions, pre-checked add-ons, buried cancel links — and helps you find your way out.",
   version: pkg.version,
   icons: {
     16: 'icons/icon16.png',

@@ -17,7 +17,7 @@ export function Popup() {
   const isOptionsPage = window.location.hash.includes('options')
   const [view, setView] = useState<'home' | 'settings'>(isOptionsPage ? 'settings' : 'home')
   const { settings, update } = useSettings()
-  const { url, tabState, loading, rescan, focusPattern } = useActiveTabState()
+  const { url, tabState, loading, rescan, focusPattern, findExit } = useActiveTabState()
 
   if (isOptionsPage) {
     return (
@@ -46,6 +46,7 @@ export function Popup() {
           loading={loading}
           onRescan={rescan}
           onSelectPattern={focusPattern}
+          onFindExit={findExit}
           onOpenDashboard={() => void sendMessage({ type: 'CG_OPEN_DASHBOARD' })}
         />
       )}

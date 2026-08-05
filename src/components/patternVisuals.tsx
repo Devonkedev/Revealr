@@ -1,17 +1,19 @@
-import { AlertTriangle, Clock, EyeOff, Heart, Layers, MailX, MousePointerClick, Repeat, ShoppingCart, type LucideIcon } from 'lucide-react'
+import { Cookie, Lock, MailX, Repeat, ShoppingCart, UserX, type LucideIcon } from 'lucide-react'
 import type { DarkPatternType, Severity } from '@/types/patterns'
+import type { AssistKind } from '@/types/detection'
 
-/** Icon shown for each dark-pattern type across the overlay, drawer, popup, and dashboard. */
+/** Icon shown for each commitment type across the overlay, drawer, and popup. */
 export const PATTERN_ICONS: Record<DarkPatternType, LucideIcon> = {
-  fake_urgency: Clock,
-  confirmshaming: Heart,
-  hidden_reject_cookies: EyeOff,
-  forced_continuity: Repeat,
-  sneak_into_basket: ShoppingCart,
-  misleading_hierarchy: MousePointerClick,
-  hard_to_find_unsubscribe: MailX,
-  hidden_recurring_billing: AlertTriangle,
-  multiple_modal_layers: Layers,
+  subscription_commitment: Repeat,
+  checkout_addon: ShoppingCart,
+}
+
+/** Icon shown for each "Find My Exit" target kind. */
+export const ASSIST_ICONS: Record<AssistKind, LucideIcon> = {
+  unsubscribe: MailX,
+  reject_cookies: Cookie,
+  account_deletion: UserX,
+  privacy_controls: Lock,
 }
 
 interface SeverityColorSet {
@@ -21,18 +23,13 @@ interface SeverityColorSet {
   dot: string
 }
 
+/**
+ * Severity tags a single finding (e.g. a $50/mo commitment reads higher
+ * than a $2 add-on) — it is deliberately never aggregated into one
+ * site-wide score. ChoiceGuard doesn't grade sites as good or bad.
+ */
 export const SEVERITY_COLORS: Record<Severity, SeverityColorSet> = {
   low: { text: 'text-cg-warn', bg: 'bg-cg-warn/15', ring: 'ring-cg-warn/30', dot: 'bg-cg-warn' },
   medium: { text: 'text-orange-400', bg: 'bg-orange-400/15', ring: 'ring-orange-400/30', dot: 'bg-orange-400' },
   high: { text: 'text-cg-danger', bg: 'bg-cg-danger/15', ring: 'ring-cg-danger/30', dot: 'bg-cg-danger' },
-}
-
-export function scoreColorClass(score: number): SeverityColorSet & { stroke: string } {
-  if (score >= 75) return { ...SEVERITY_COLORS.low, text: 'text-cg-good', bg: 'bg-cg-good/15', ring: 'ring-cg-good/30', dot: 'bg-cg-good', stroke: '#5ee6a0' }
-  if (score >= 45) return { ...SEVERITY_COLORS.medium, stroke: '#fb923c' }
-  return { ...SEVERITY_COLORS.high, stroke: '#ff5d5d' }
-}
-
-export function riskLabel(level: 'low' | 'medium' | 'high'): string {
-  return level === 'low' ? 'Low Risk' : level === 'medium' ? 'Medium Risk' : 'High Risk'
 }

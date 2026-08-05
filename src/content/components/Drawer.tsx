@@ -1,23 +1,24 @@
 import { ArrowLeft, ExternalLink, ShieldCheck, X } from 'lucide-react'
-import type { DetectedPattern, TransparencyScoreResult } from '@/types/detection'
+import type { DetectedPattern, PageFindingsSummary } from '@/types/detection'
 import { PATTERN_META } from '@/types/patterns'
-import { PatternListItem, RiskBadge, ScoreGauge } from '@/components'
+import { CommitmentListItem, FindExitButton } from '@/components'
 import { PATTERN_ICONS, SEVERITY_COLORS } from '@/components/patternVisuals'
-import { ExplanationPanel } from './ExplanationPanel'
+import { CommitmentDetail } from './CommitmentDetail'
 
 interface DrawerProps {
   open: boolean
   domain: string
   patterns: DetectedPattern[]
-  score: TransparencyScoreResult
+  findings: PageFindingsSummary
   selectedPattern: DetectedPattern | null
   onSelectPattern: (pattern: DetectedPattern | null) => void
   onClose: () => void
+  onFindExit: () => void
   onOpenDashboard: () => void
 }
 
-/** Right-side drawer: score summary + pattern list, drilling into an AI explanation per pattern. */
-export function Drawer({ open, domain, patterns, score, selectedPattern, onSelectPattern, onClose, onOpenDashboard }: DrawerProps) {
+/** Right-side drawer: what was found on this page, drilling into extracted commitment details. */
+export function Drawer({ open, domain, patterns, findings, selectedPattern, onSelectPattern, onClose, onFindExit, onOpenDashboard }: DrawerProps) {
   if (!open) return null
 
   const handleSelect = (pattern: DetectedPattern) => {
@@ -43,7 +44,7 @@ export function Drawer({ open, domain, patterns, score, selectedPattern, onSelec
       {selectedPattern ? (
         <DrawerDetail pattern={selectedPattern} onBack={() => onSelectPattern(null)} />
       ) : (
-        <DrawerOverview domain={domain} patterns={patterns} score={score} onSelect={handleSelect} />
+        <DrawerOverview domain={domain} patterns={patterns} findings={findings} onSelect={handleSelect} onFindExit={onFindExit} />
       )}
 
       <footer className="border-t border-cg-border px-4 py-3">
@@ -61,45 +62,48 @@ export function Drawer({ open, domain, patterns, score, selectedPattern, onSelec
 function DrawerOverview({
   domain,
   patterns,
-  score,
+  findings,
   onSelect,
+  onFindExit,
 }: {
   domain: string
   patterns: DetectedPattern[]
-  score: TransparencyScoreResult
+  findings: PageFindingsSummary
   onSelect: (p: DetectedPattern) => void
+  onFindExit: () => void
 }) {
   return (
     <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4">
-      <div className="flex items-center gap-4 rounded-2xl bg-cg-surface p-4 ring-1 ring-cg-border">
-        <ScoreGauge score={score.score} label="/ 100" />
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold">{domain}</div>
-          <div className="mt-1">
-            <RiskBadge level={score.riskLevel} />
-          </div>
-          <div className="mt-1.5 text-xs text-cg-muted">{patterns.length} pattern{patterns.length === 1 ? '' : 's'} found on this page</div>
+      <div className="rounded-2xl bg-cg-surface p-4 ring-1 ring-cg-border">
+        <div className="truncate text-sm font-semibold">{domain}</div>
+        <div className="mt-1 text-xs text-cg-muted">
+          {findings.totalCommitments === 0
+            ? 'No hidden commitments found on this page.'
+            : `${findings.totalCommitments} hidden commitment${findings.totalCommitments === 1 ? '' : 's'} found on this page.`}
         </div>
       </div>
 
-      <div className="mt-5 text-xs font-medium uppercase tracking-wide text-cg-muted">Patterns Found</div>
-      <div className="mt-1 flex flex-col gap-1">
-        {patterns.length === 0 && (
-          <div className="rounded-xl bg-cg-surface-2/50 p-4 text-center text-xs text-cg-muted">
-            No manipulative patterns detected yet. ChoiceGuard keeps watching as you browse.
-          </div>
-        )}
-        {patterns.map((p) => (
-          <PatternListItem
-            key={p.id}
-            type={p.type}
-            severity={p.severity}
-            confidence={p.confidence}
-            evidenceText={p.evidenceText}
-            onClick={() => onSelect(p)}
-          />
-        ))}
+      <div className="mt-4">
+        <FindExitButton onClick={onFindExit} />
       </div>
+
+      {patterns.length > 0 && (
+        <>
+          <div className="mb-1 mt-5 text-xs font-medium uppercase tracking-wide text-cg-muted">What happens if I continue</div>
+          <div className="mt-1 flex flex-col gap-1">
+            {patterns.map((p) => (
+              <CommitmentListItem
+                key={p.id}
+                type={p.type}
+                severity={p.severity}
+                summary={p.quickSummary || PATTERN_META[p.type].description}
+                amount={p.quickAmount}
+                onClick={() => onSelect(p)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -112,7 +116,7 @@ function DrawerDetail({ pattern, onBack }: { pattern: DetectedPattern; onBack: (
   return (
     <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4">
       <button onClick={onBack} className="mb-3 flex items-center gap-1.5 text-xs font-medium text-cg-muted hover:text-cg-text">
-        <ArrowLeft size={13} /> All patterns
+        <ArrowLeft size={13} /> All commitments
       </button>
 
       <div className="flex items-center gap-3">
@@ -121,12 +125,12 @@ function DrawerDetail({ pattern, onBack }: { pattern: DetectedPattern; onBack: (
         </span>
         <div>
           <div className="text-base font-semibold">{meta.label}</div>
-          <div className="text-xs text-cg-muted">{meta.description}</div>
+          <div className="text-xs text-cg-muted">What exactly you're agreeing to</div>
         </div>
       </div>
 
       <div className="mt-5">
-        <ExplanationPanel pattern={pattern} />
+        <CommitmentDetail pattern={pattern} />
       </div>
     </div>
   )

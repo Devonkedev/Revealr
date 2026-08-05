@@ -1,29 +1,29 @@
 import { ExternalLink, RefreshCw } from 'lucide-react'
 import type { TabState } from '@/types/messages'
-import { Button, PatternListItem, RiskBadge, ScoreGauge, Spinner } from '@/components'
+import { PATTERN_META } from '@/types/patterns'
+import { Button, CommitmentListItem, FindExitButton, Spinner } from '@/components'
 
 interface PopupHomeProps {
   tabState: TabState | null
   loading: boolean
   onRescan: () => void
   onSelectPattern: (patternId: string) => void
+  onFindExit: () => void
   onOpenDashboard: () => void
 }
 
-export function PopupHome({ tabState, loading, onRescan, onSelectPattern, onOpenDashboard }: PopupHomeProps) {
+export function PopupHome({ tabState, loading, onRescan, onSelectPattern, onFindExit, onOpenDashboard }: PopupHomeProps) {
+  const totalCommitments = tabState?.findings.totalCommitments ?? 0
+
   return (
     <div className="flex flex-col gap-4 px-4 py-4">
       {tabState ? (
-        <div className="flex items-center gap-4 rounded-2xl bg-cg-surface p-4 ring-1 ring-cg-border">
-          <ScoreGauge score={tabState.score.score} label="/ 100" />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-cg-text">{tabState.domain}</div>
-            <div className="mt-1">
-              <RiskBadge level={tabState.score.riskLevel} />
-            </div>
-            <div className="mt-1.5 text-xs text-cg-muted">
-              {tabState.patterns.length} pattern{tabState.patterns.length === 1 ? '' : 's'} found
-            </div>
+        <div className="rounded-2xl bg-cg-surface p-4 ring-1 ring-cg-border">
+          <div className="truncate text-sm font-semibold text-cg-text">{tabState.domain}</div>
+          <div className="mt-1 text-xs text-cg-muted">
+            {totalCommitments === 0
+              ? 'No hidden commitments found on this page.'
+              : `${totalCommitments} hidden commitment${totalCommitments === 1 ? '' : 's'} found on this page.`}
           </div>
         </div>
       ) : (
@@ -32,21 +32,23 @@ export function PopupHome({ tabState, loading, onRescan, onSelectPattern, onOpen
         </div>
       )}
 
-      <Button variant="secondary" icon={loading ? <Spinner size={13} /> : <RefreshCw size={13} />} onClick={onRescan} disabled={loading}>
+      <FindExitButton onClick={onFindExit} />
+
+      <Button variant="ghost" icon={loading ? <Spinner size={13} /> : <RefreshCw size={13} />} onClick={onRescan} disabled={loading}>
         Rescan Page
       </Button>
 
       {tabState && tabState.patterns.length > 0 && (
         <div>
-          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-cg-muted">Patterns Found</div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-cg-muted">What happens if I continue</div>
           <div className="flex max-h-72 flex-col gap-1 overflow-y-auto">
             {tabState.patterns.map((p) => (
-              <PatternListItem
+              <CommitmentListItem
                 key={p.id}
                 type={p.type}
                 severity={p.severity}
-                confidence={p.confidence}
-                evidenceText={p.evidenceText}
+                summary={p.quickSummary || PATTERN_META[p.type].description}
+                amount={p.quickAmount}
                 onClick={() => onSelectPattern(p.id)}
               />
             ))}

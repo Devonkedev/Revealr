@@ -3,7 +3,7 @@ import type { DetectedPattern } from '@/types/detection'
 import { PATTERN_META } from '@/types/patterns'
 import { PATTERN_ICONS, SEVERITY_COLORS } from '@/components/patternVisuals'
 
-interface PatternOutlineProps {
+interface CommitmentOutlineProps {
   pattern: DetectedPattern
   onSelect: (pattern: DetectedPattern) => void
 }
@@ -14,8 +14,8 @@ const OUTLINE_COLOR: Record<DetectedPattern['severity'], string> = {
   high: '#ff5d5d',
 }
 
-/** A hoverable, clickable red-outline box drawn over a manipulative element. */
-export function PatternOutline({ pattern, onSelect }: PatternOutlineProps) {
+/** A hoverable, clickable outline box drawn over an element with a hidden commitment. */
+export function CommitmentOutline({ pattern, onSelect }: CommitmentOutlineProps) {
   const [hovered, setHovered] = useState(false)
   const rect = pattern.element.getBoundingClientRect()
   if (rect.width === 0 || rect.height === 0) return null
@@ -47,7 +47,7 @@ export function PatternOutline({ pattern, onSelect }: PatternOutlineProps) {
       }}
       role="button"
       tabIndex={0}
-      aria-label={`ChoiceGuard flagged: ${meta.label}`}
+      aria-label={`ChoiceGuard found: ${meta.label}`}
     >
       <span
         className={`absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-cg-bg ${colors.bg} ${colors.text}`}
@@ -65,8 +65,8 @@ export function PatternOutline({ pattern, onSelect }: PatternOutlineProps) {
           }}
         >
           <div className="mb-0.5 font-semibold text-cg-text">{meta.label}</div>
-          <div className="text-cg-muted">{meta.description}</div>
-          <div className="mt-1.5 font-medium text-cg-accent">Click for AI explanation →</div>
+          <div className="text-cg-muted">{pattern.quickSummary || meta.description}</div>
+          <div className="mt-1.5 font-medium text-cg-accent">Click for details →</div>
         </div>
       )}
     </div>

@@ -16,9 +16,11 @@ function formatDay(iso: string): string {
 }
 
 /**
- * Single-series line chart — avg Transparency Score over the last 14 days.
- * One series needs no legend box (the title says what's plotted); a
- * crosshair + shared tooltip drives hover, per the dataviz interaction spec.
+ * Single-series line chart — total hidden commitments found across the
+ * registry per day, last 14 days. This is a count, not a score: it answers
+ * "how much did ChoiceGuard find," never "how good or bad were sites." One
+ * series needs no legend box (the title says what's plotted); a crosshair +
+ * shared tooltip drives hover, per the dataviz interaction spec.
  */
 export function TrendChart({ data }: TrendChartProps) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
@@ -26,15 +28,19 @@ export function TrendChart({ data }: TrendChartProps) {
   const plotW = WIDTH - PAD.left - PAD.right
   const plotH = HEIGHT - PAD.top - PAD.bottom
 
+  const maxValue = Math.max(1, ...data.map((d) => d.totalCommitments))
+  const niceMax = Math.ceil(maxValue / 5) * 5 || 5
+
   const points = useMemo(() => {
     if (data.length === 0) return []
     const step = data.length > 1 ? plotW / (data.length - 1) : 0
     return data.map((d, i) => ({
       ...d,
       x: PAD.left + step * i,
-      y: PAD.top + plotH * (1 - d.avgScore / 100),
+      y: PAD.top + plotH * (1 - d.totalCommitments / niceMax),
     }))
-  }, [data, plotW, plotH])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, plotW, plotH, niceMax])
 
   if (points.length === 0) {
     return <div className="flex h-[220px] items-center justify-center text-xs text-cg-muted">Not enough data yet.</div>
@@ -43,7 +49,7 @@ export function TrendChart({ data }: TrendChartProps) {
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
   const areaPath = `${linePath} L ${points[points.length - 1]!.x.toFixed(1)} ${PAD.top + plotH} L ${points[0]!.x.toFixed(1)} ${PAD.top + plotH} Z`
 
-  const gridTicks = [0, 50, 100]
+  const gridTicks = [0, Math.round(niceMax / 2), niceMax]
   const hovered = hoverIndex !== null ? points[hoverIndex] : null
 
   const handleMove = (e: MouseEvent<SVGRectElement>) => {
@@ -56,9 +62,9 @@ export function TrendChart({ data }: TrendChartProps) {
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label="Average transparency score over the last 14 days">
+      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label="Hidden commitments found per day, last 14 days">
         {gridTicks.map((tick) => {
-          const y = PAD.top + plotH * (1 - tick / 100)
+          const y = PAD.top + plotH * (1 - tick / niceMax)
           return (
             <g key={tick}>
               <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y} y2={y} stroke="#26262f" strokeWidth={1} />
@@ -110,7 +116,7 @@ export function TrendChart({ data }: TrendChartProps) {
         >
           <div className="font-medium text-cg-text">{formatDay(hovered.date)}</div>
           <div className="text-cg-muted">
-            Avg score: <span className="font-semibold text-cg-text">{hovered.avgScore}</span>
+            Commitments found: <span className="font-semibold text-cg-text">{hovered.totalCommitments}</span>
           </div>
           <div className="text-cg-muted">
             Scans: <span className="text-cg-text">{hovered.scans}</span>

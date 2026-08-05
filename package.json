@@ -1,7 +1,7 @@
 {
   "name": "choiceguard",
   "version": "1.0.0",
-  "description": "AI-powered browser extension that detects manipulative UX (dark patterns) in real time.",
+  "description": "Browser extension that tells you exactly what you're agreeing to before you click Continue, and helps you find your way out.",
   "private": true,
   "type": "module",
   "scripts": {

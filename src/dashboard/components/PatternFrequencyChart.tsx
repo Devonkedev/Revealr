@@ -6,7 +6,7 @@ interface PatternFrequencyChartProps {
   frequency: Partial<Record<DarkPatternType, number>>
 }
 
-/** Ranked meter list — most common manipulation types across the registry. Single hue: this is a magnitude ranking, not multi-series identity. */
+/** Ranked meter list — most common hidden-commitment types across the registry. Single hue: this is a magnitude ranking, not multi-series identity. */
 export function PatternFrequencyChart({ frequency }: PatternFrequencyChartProps) {
   const entries = (Object.entries(frequency) as [DarkPatternType, number][]).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1])
 

@@ -56,5 +56,11 @@ export function useActiveTabState() {
     [tabId],
   )
 
-  return { tabId, url, tabState, loading, rescan, focusPattern }
+  const findExit = useCallback(async () => {
+    if (!tabId) return
+    await sendMessageToTab(tabId, { type: 'CG_FIND_EXIT' })
+    window.close()
+  }, [tabId])
+
+  return { tabId, url, tabState, loading, rescan, focusPattern, findExit }
 }

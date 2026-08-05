@@ -2,12 +2,12 @@ import type { DarkPatternType } from './patterns'
 
 /**
  * A single anonymous, opt-in upload to the Firestore "registry" collection.
- * No PII, no full URLs — domain + pattern types + score only.
+ * No PII, no full URLs, no score/judgment — just what was found.
  */
 export interface RegistryEntry {
   domain: string
   patternTypes: DarkPatternType[]
-  score: number
+  commitmentCount: number
   timestamp: number
 }
 
@@ -17,7 +17,7 @@ export interface RegistryEntryDoc extends RegistryEntry {
 
 export interface DashboardTopSite {
   domain: string
-  avgScore: number
+  totalCommitments: number
   scans: number
   mostCommonPattern: DarkPatternType | null
 }
@@ -25,7 +25,7 @@ export interface DashboardTopSite {
 export interface DashboardTrendPoint {
   /** ISO date (day granularity). */
   date: string
-  avgScore: number
+  totalCommitments: number
   scans: number
 }
 

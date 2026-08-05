@@ -7,7 +7,7 @@ export function useDetectionStore(store: DetectionStore) {
 
   const patterns = useSyncExternalStore(subscribe, () => store.getPatterns())
   const assists = useSyncExternalStore(subscribe, () => store.getAssists())
-  const score = useSyncExternalStore(subscribe, () => store.getScore())
+  const findings = useSyncExternalStore(subscribe, () => store.getFindings())
 
-  return { patterns, assists, score }
+  return { patterns, assists, findings }
 }

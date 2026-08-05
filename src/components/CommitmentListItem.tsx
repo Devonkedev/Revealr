@@ -2,17 +2,18 @@ import type { DarkPatternType, Severity } from '@/types/patterns'
 import { PATTERN_META } from '@/types/patterns'
 import { PATTERN_ICONS, SEVERITY_COLORS } from './patternVisuals'
 
-interface PatternListItemProps {
+interface CommitmentListItemProps {
   type: DarkPatternType
   severity: Severity
-  confidence: number
-  evidenceText?: string
+  /** Plain-language summary — "Then ₹799/month, renews monthly.", not a psychology explanation. */
+  summary: string
+  amount?: string
   onClick?: () => void
   active?: boolean
 }
 
-/** One row in a pattern list — shared between the popup and the in-page drawer. */
-export function PatternListItem({ type, severity, confidence, evidenceText, onClick, active }: PatternListItemProps) {
+/** One row in a commitment list — shared between the popup and the in-page drawer. */
+export function CommitmentListItem({ type, severity, summary, amount, onClick, active }: CommitmentListItemProps) {
   const meta = PATTERN_META[type]
   const Icon = PATTERN_ICONS[type]
   const colors = SEVERITY_COLORS[severity]
@@ -31,9 +32,9 @@ export function PatternListItem({ type, severity, confidence, evidenceText, onCl
       <span className="min-w-0 flex-1">
         <span className="flex items-center justify-between gap-2">
           <span className="truncate text-sm font-medium text-cg-text">{meta.label}</span>
-          <span className="shrink-0 text-[11px] tabular-nums text-cg-muted">{Math.round(confidence * 100)}%</span>
+          {amount && <span className="shrink-0 text-sm font-semibold tabular-nums text-cg-text">{amount}</span>}
         </span>
-        {evidenceText && <span className="mt-0.5 line-clamp-2 block text-xs text-cg-muted">{evidenceText}</span>}
+        <span className="mt-0.5 line-clamp-2 block text-xs text-cg-muted">{summary}</span>
       </span>
     </button>
   )

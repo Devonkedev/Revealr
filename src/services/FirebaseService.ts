@@ -35,7 +35,7 @@ function toFirestoreFields(entry: RegistryEntry): Record<string, FirestoreValue>
   return {
     domain: { stringValue: entry.domain },
     patternTypes: { arrayValue: { values: entry.patternTypes.map((type) => ({ stringValue: type })) } },
-    score: { integerValue: String(entry.score) },
+    commitmentCount: { integerValue: String(entry.commitmentCount) },
     timestamp: { integerValue: String(entry.timestamp) },
   }
 }
@@ -63,7 +63,7 @@ function fromFirestoreDocument(doc: FirestoreDocument): RegistryEntryDoc {
     id: doc.name.split('/').pop() ?? doc.name,
     domain: stringField(doc.fields, 'domain', 'unknown'),
     patternTypes: arrayField(doc.fields, 'patternTypes'),
-    score: intField(doc.fields, 'score', 0),
+    commitmentCount: intField(doc.fields, 'commitmentCount', 0),
     timestamp: intField(doc.fields, 'timestamp', Date.now()),
   }
 }
@@ -92,11 +92,16 @@ export async function fetchRegistryEntries(limit = 500): Promise<RegistryEntryDo
   return (data.documents ?? []).map(fromFirestoreDocument)
 }
 
-/** Pure aggregation — shared by the real Firestore path and the mock data generator. */
+/**
+ * Pure aggregation — shared by the real Firestore path and the mock data
+ * generator. This counts what was found; it never scores or ranks a site as
+ * "good" or "bad" — sites are ordered by how many hidden commitments were
+ * found, a fact, not a grade.
+ */
 export function buildDashboardStats(entries: RegistryEntryDoc[]): DashboardStats {
   const byDomain = new Map<string, RegistryEntryDoc[]>()
   const patternFrequency: Partial<Record<DarkPatternType, number>> = {}
-  const byDay = new Map<string, { totalScore: number; scans: number }>()
+  const byDay = new Map<string, { totalCommitments: number; scans: number }>()
 
   for (const entry of entries) {
     const domainEntries = byDomain.get(entry.domain) ?? []
@@ -108,15 +113,15 @@ export function buildDashboardStats(entries: RegistryEntryDoc[]): DashboardStats
     }
 
     const day = isoDay(entry.timestamp)
-    const dayAgg = byDay.get(day) ?? { totalScore: 0, scans: 0 }
-    dayAgg.totalScore += entry.score
+    const dayAgg = byDay.get(day) ?? { totalCommitments: 0, scans: 0 }
+    dayAgg.totalCommitments += entry.commitmentCount
     dayAgg.scans += 1
     byDay.set(day, dayAgg)
   }
 
   const topSites: DashboardTopSite[] = Array.from(byDomain.entries())
     .map(([domain, domainEntries]) => {
-      const avgScore = Math.round(domainEntries.reduce((sum, e) => sum + e.score, 0) / domainEntries.length)
+      const totalCommitments = domainEntries.reduce((sum, e) => sum + e.commitmentCount, 0)
       const patternCounts = new Map<DarkPatternType, number>()
       for (const e of domainEntries) {
         for (const type of e.patternTypes) {
@@ -131,13 +136,13 @@ export function buildDashboardStats(entries: RegistryEntryDoc[]): DashboardStats
           mostCommonPattern = type
         }
       }
-      return { domain, avgScore, scans: domainEntries.length, mostCommonPattern }
+      return { domain, totalCommitments, scans: domainEntries.length, mostCommonPattern }
     })
-    .sort((a, b) => a.avgScore - b.avgScore)
+    .sort((a, b) => b.totalCommitments - a.totalCommitments)
     .slice(0, 10)
 
   const trend: DashboardTrendPoint[] = Array.from(byDay.entries())
-    .map(([date, agg]) => ({ date, avgScore: Math.round(agg.totalScore / agg.scans), scans: agg.scans }))
+    .map(([date, agg]) => ({ date, totalCommitments: agg.totalCommitments, scans: agg.scans }))
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-14)
 

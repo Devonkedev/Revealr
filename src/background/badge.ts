@@ -1,16 +1,13 @@
-import type { TransparencyScoreResult } from '@/types/detection'
+import type { PageFindingsSummary } from '@/types/detection'
 
-const RISK_COLOR: Record<TransparencyScoreResult['riskLevel'], string> = {
-  low: '#5ee6a0',
-  medium: '#fb923c',
-  high: '#ff5d5d',
-}
+/** Neutral brand color — the badge is a count, not a risk signal, so it doesn't traffic-light. */
+const BADGE_COLOR = '#7c6cf6'
 
-/** Reflects the current tab's pattern count + risk level on the toolbar icon. */
-export async function updateActionBadge(tabId: number, score: TransparencyScoreResult): Promise<void> {
-  const text = score.totalPatterns > 0 ? String(score.totalPatterns) : ''
+/** Shows how many commitments were found on the current tab. No color-coded judgment. */
+export async function updateActionBadge(tabId: number, findings: PageFindingsSummary): Promise<void> {
+  const text = findings.totalCommitments > 0 ? String(findings.totalCommitments) : ''
   await chrome.action.setBadgeText({ tabId, text })
-  await chrome.action.setBadgeBackgroundColor({ tabId, color: RISK_COLOR[score.riskLevel] })
+  await chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR })
 }
 
 export async function clearActionBadge(tabId: number): Promise<void> {

@@ -12,7 +12,7 @@ export function DashboardHeader({ source }: DashboardHeaderProps) {
         <ShieldCheck size={22} className="text-cg-accent" />
         <div>
           <h1 className="text-lg font-semibold text-cg-text">ChoiceGuard Registry</h1>
-          <p className="text-xs text-cg-muted">Aggregated, anonymous dark-pattern telemetry across opted-in browsing.</p>
+          <p className="text-xs text-cg-muted">Aggregated, anonymous record of hidden subscriptions and checkout add-ons found across opted-in browsing.</p>
         </div>
       </div>
       {source === 'mock' && (

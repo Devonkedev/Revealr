@@ -1,7 +1,7 @@
 import type { DarkPatternType, Severity } from './patterns'
 
 /**
- * A pattern detected in the *current* page, still holding a live DOM
+ * A commitment detected in the *current* page, still holding a live DOM
  * reference. Lives only inside the content script — never sent through
  * `chrome.runtime.sendMessage` (DOM nodes aren't structured-cloneable).
  */
@@ -13,10 +13,16 @@ export interface DetectedPattern {
   confidence: number
   element: HTMLElement
   rect: DOMRect
-  /** Short snippet of text/markup used as evidence and as AI context. */
+  /** Short snippet of text/markup used as evidence and as extraction context. */
   evidenceText: string
   evidenceHtml: string
   detectedAt: number
+  /**
+   * Best-effort summary computed locally via regex — no AI call needed.
+   * Shown immediately in the banner; `CG_EXTRACT_COMMITMENT` can enrich it.
+   */
+  quickSummary?: string
+  quickAmount?: string
 }
 
 /** The wire-safe projection of a DetectedPattern, safe to postMessage/sendMessage. */
@@ -27,6 +33,8 @@ export interface SerializedPattern {
   confidence: number
   evidenceText: string
   detectedAt: number
+  quickSummary?: string
+  quickAmount?: string
 }
 
 export function serializePattern(pattern: DetectedPattern): SerializedPattern {
@@ -37,30 +45,39 @@ export function serializePattern(pattern: DetectedPattern): SerializedPattern {
     confidence: pattern.confidence,
     evidenceText: pattern.evidenceText,
     detectedAt: pattern.detectedAt,
+    quickSummary: pattern.quickSummary,
+    quickAmount: pattern.quickAmount,
   }
 }
 
-/** Structured output the AI service returns for a given pattern. */
-export interface AIExplanation {
+/**
+ * What the AI is asked for: a structured extraction of the commitment, not
+ * an opinion about it. Every field answers "what exactly is the user
+ * agreeing to" — nothing here is a judgment call.
+ */
+export interface ExtractedCommitment {
   type: DarkPatternType
-  /** AI's own confidence in the classification, 0–1. */
+  /** Extraction confidence, 0–1 — not a manipulation score. */
   confidence: number
-  psychology: string
-  whyManipulative: string
-  suggestedAlternative: string
-  potentialImpact: string
+  /** One-line plain-language summary, e.g. "Then ₹799/month, renews monthly." */
+  summary: string
+  amount?: string
+  billingFrequency?: string
+  trialEndDate?: string
+  renewalDate?: string
+  cancellationRequirement?: string
 }
 
-export type ExplanationStatus = 'idle' | 'loading' | 'ready' | 'error'
+export type CommitmentDetailStatus = 'idle' | 'loading' | 'ready' | 'error'
 
-export interface ExplanationState {
-  status: ExplanationStatus
-  explanation?: AIExplanation
+export interface CommitmentDetailState {
+  status: CommitmentDetailStatus
+  commitment?: ExtractedCommitment
   error?: string
 }
 
-/** "Choice Assist" targets — controls ChoiceGuard highlights to help users find them. Never auto-clicked. */
-export type AssistKind = 'reject_cookies' | 'unsubscribe' | 'recurring_billing' | 'cancellation_link'
+/** "Find My Exit" targets — controls ChoiceGuard locates and highlights. Never auto-clicked. */
+export type AssistKind = 'reject_cookies' | 'unsubscribe' | 'account_deletion' | 'privacy_controls'
 
 export interface AssistTarget {
   id: string
@@ -70,14 +87,19 @@ export interface AssistTarget {
   label: string
 }
 
-export interface RiskLevelInfo {
-  level: 'low' | 'medium' | 'high'
-  label: string
+/** Non-judgmental page summary: what was found, not how "risky" the page is. */
+export interface PageFindingsSummary {
+  subscriptionCommitments: number
+  checkoutAddons: number
+  totalCommitments: number
 }
 
-export interface TransparencyScoreResult {
-  score: number
-  riskLevel: RiskLevelInfo['level']
-  patternCounts: Partial<Record<DarkPatternType, number>>
-  totalPatterns: number
+export function summarizeFindings(patterns: Array<{ type: DarkPatternType }>): PageFindingsSummary {
+  const subscriptionCommitments = patterns.filter((p) => p.type === 'subscription_commitment').length
+  const checkoutAddons = patterns.filter((p) => p.type === 'checkout_addon').length
+  return {
+    subscriptionCommitments,
+    checkoutAddons,
+    totalCommitments: subscriptionCommitments + checkoutAddons,
+  }
 }
