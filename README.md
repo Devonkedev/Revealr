@@ -1,15 +1,34 @@
 # Revealr
 
-**Revealr** tells you exactly what you're agreeing to — and what it might cost you — before you click "Continue." It's a consumer-protection browser extension, not a UX-education tool: it doesn't explain psychology or grade sites as "good" or "bad." It finds hidden financial and consent commitments on the page you're on right now, and gives you one click to get out of them.
+**Tells you exactly what you're agreeing to — and what it might cost you — before you click "Continue."**
 
-> This is a real, working extension — not a mockup — but the detectors are heuristics tuned for precision over recall, and the Firebase backend is intentionally left open for easy setup (see [Firebase setup](#firebase-setup-optional)).
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Manifest V3](https://img.shields.io/badge/manifest-v3-6b4fd8)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![TypeScript strict](https://img.shields.io/badge/TypeScript-strict%2C%20no%20any-3178c6)](tsconfig.json)
 
----
+Revealr is a consumer-protection browser extension, not a UX-education tool — it doesn't explain psychology or grade sites as "good" or "bad." It finds hidden financial and consent commitments on the page you're on right now (a trial that silently converts to a paid subscription, an insurance add-on that got pre-checked at checkout) and gives you one click to get out of them.
 
-## The three things it does
+This is a real, working extension, not a mockup. The detectors are heuristics deliberately tuned for precision over recall, and the Firebase backend is intentionally left open for easy setup — see [Firebase setup](#firebase-setup-optional) for the tradeoffs.
 
-1. **Subscription Trap Shield** — finds free trials that convert to paid, and recurring-billing terms wherever they're disclosed, and surfaces the actual number: *"Free trial ends in 7 days. Then ₹799/month, renews monthly."* No hunting through fine print.
-2. **Checkout Guardian** — finds pre-checked add-ons (insurance, warranties, "protection plans", donations) at checkout and shows the dollar impact directly: *"Protection Plan +₹249 — already selected."*
+## Contents
+
+- [What it does](#what-it-does)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [Privacy, by construction](#privacy-by-construction)
+- [Firebase setup (optional)](#firebase-setup-optional)
+- [What it detects (and what it deliberately doesn't)](#what-it-detects-and-what-it-deliberately-doesnt)
+- [Project structure](#project-structure)
+- [Example walkthrough](#example-walkthrough)
+- [Known limitations](#known-limitations)
+- [Contributing](#contributing)
+- [License](#license)
+
+## What it does
+
+1. **Subscription Trap Shield** — finds free trials that convert to paid, and recurring-billing terms wherever they're disclosed, and surfaces the actual number: *"Free trial ends in 7 days. Then $9.99/month, renews monthly."* No hunting through fine print.
+2. **Checkout Guardian** — finds pre-checked add-ons (insurance, warranties, "protection plans", donations) at checkout and shows the dollar impact directly: *"Protection Plan +$12.99 — already selected."*
 3. **Find My Exit** — one click locates and scrolls to the real cancel-subscription link, the real reject-cookies button, account-deletion, or privacy controls, however buried they are. **Revealr never clicks, submits, or modifies anything — it only improves visibility.**
 
 Revealr does not compute a "trust score" or rank sites as safe/unsafe. It reports facts — what was found, and what it costs — and leaves the judgment to you.
@@ -22,8 +41,6 @@ Revealr does not compute a "trust score" or rank sites as safe/unsafe. It report
 - **Vite 8**
 - **OpenAI** Chat Completions API (JSON mode), used narrowly for structured *extraction* (never interpretation), behind a swappable `AIService` abstraction
 - **Firebase Firestore** (REST API only — no `firebase-js-sdk`, so it works from an MV3 service worker) as the Registry backend
-
----
 
 ## Getting started
 
@@ -56,8 +73,6 @@ npm run typecheck      # tsc -b, no emit
 npm run lint           # eslint
 npm run generate-icons # regenerates public/icons/*.png (pure-Node PNG encoder, no deps)
 ```
-
----
 
 ## Environment variables
 
@@ -118,8 +133,6 @@ Single collection, `registry`, one document per opted-in scan (throttled to at m
 
 The dashboard aggregates this client-side: sites ranked by total commitments found, a 14-day found-per-day trend, and commitment-type frequency across the whole registry. No score or good/bad ranking is computed anywhere.
 
----
-
 ## What it detects (and what it deliberately doesn't)
 
 | Detector | What it finds | Why it's kept high-confidence |
@@ -128,11 +141,9 @@ The dashboard aggregates this client-side: sites ranked by total commitments fou
 | **Checkout add-on** | Pre-checked checkboxes whose label mentions insurance, warranty, protection plans, or donations. | Binary checkbox state — the least ambiguous signal in the extension. |
 | **Find My Exit** (assist, not a "flag") | Reject-cookies button, cancel/unsubscribe link, account-deletion link, privacy controls — found and highlighted regardless of how they're styled. | Makes no claim about manipulation; it's a lookup, not a judgment. |
 
-An earlier version of this project also tried to detect fake urgency, confirmshaming, misleading button hierarchy, hidden-cookie-button suppression as a standalone flag, and modal stacking. All were cut: none map to quantifiable financial/consent harm, and several (fake urgency's reset-detection, button-hierarchy) turned out to fire on completely ordinary UI in practice. A tool that cries wolf gets uninstalled — precision was prioritized over feature count.
+An earlier iteration also detected fake urgency countdowns, confirmshaming copy, misleading button hierarchy, and stacked modals. All were cut: none map to quantifiable financial or consent harm, and in practice several (urgency-timer resets, button-size hierarchy) fired on completely ordinary UI. A tool that cries wolf gets uninstalled, so precision was prioritized over feature count.
 
 All thresholds live in `src/utils/constants.ts` — tune them without touching detector logic.
-
----
 
 ## Project structure
 
@@ -160,14 +171,12 @@ src/
 
 ### Swapping the AI provider
 
-`AIService` (`src/services/AIService.ts`) depends only on the `AIProvider` interface, whose one method is `extract()` — never `explain()` or `judge()`. `OpenAIProvider` is the only implementation today; to add another (Anthropic, a local model, etc.), implement `AIProvider.extract()` and wire it into `createAIService()`.
-
----
+`AIService` (`src/services/AIService.ts`) depends only on the `AIProvider` interface, whose one method is `extract()` — never `explain()` or `judge()`. `OpenAIProvider` is the only implementation today; to add another (Gemini, Anthropic, a local model, etc.), implement `AIProvider.extract()` and wire it into `createAIService()`.
 
 ## Example walkthrough
 
-1. Open a free-trial signup page → Revealr shows *"Free trial ends in 7 days. Then ₹799/month, renews monthly."*
-2. Open an e-commerce checkout with a pre-checked add-on → highlighted: *"+₹249 warranty — already selected."*
+1. Open a free-trial signup page → Revealr shows *"Free trial ends in 7 days. Then $9.99/month, renews monthly."*
+2. Open an e-commerce checkout with a pre-checked add-on → highlighted: *"+$12.99 warranty — already selected."*
 3. Click **Find My Exit** → the page auto-scrolls to the real cancel-subscription or reject-all-cookies link.
 
 ## Known limitations
@@ -176,6 +185,10 @@ src/
 - The Firestore Registry uses open test-mode rules — don't point it at production data.
 - No automated test suite yet — verified via `tsc`, `eslint`, and manual QA in Chrome.
 
+## Contributing
+
+Issues and PRs are welcome. Keep changes scoped, run `npm run typecheck && npm run lint` before opening a PR, and match the existing code style (no `any`, small components, comments only where the *why* isn't obvious from the code).
+
 ## License
 
-MIT.
+[MIT](LICENSE)

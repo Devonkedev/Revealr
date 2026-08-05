@@ -6,7 +6,7 @@ import { isCurrentTopFrame } from '@/utils/domUtils'
 // which is what lets us load it into a shadow root (a regular Vite CSS import can't reach there).
 import contentStyles from '@/styles/globals.css?inline'
 
-const HOST_ID = 'choiceguard-host'
+const HOST_ID = 'revealr-host'
 
 /**
  * `:root` selectors inside a shadow tree's stylesheet don't match anything

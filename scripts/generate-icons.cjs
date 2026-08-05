@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generates ChoiceGuard's extension icons as plain PNG files with zero
+ * Generates Revealr's extension icons as plain PNG files with zero
  * external dependencies (no canvas / sharp / imagemagick required).
  *
  * The mark is a rounded square in the brand gradient with a concentric
